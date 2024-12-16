@@ -6,11 +6,12 @@ from datetime import datetime
 import json
 import threading
 from pymongo import MongoClient
+from multiprocessing import Process
 
 HOST_NAME = "localhost"
 HTTP_PORT = 3000
 SOCKET_PORT = 5000
-MONGO_URI = "mongodb://localhost:27017"
+MONGO_URI = "mongodb://mongodb:27017"
 DB_NAME = "messages_db"
 COLLECTION_NAME = "messages"
 
@@ -70,11 +71,11 @@ def socket_server():
             print(f"Message saved: {message_data}")
 
 if __name__ == "__main__":
-    # Start socket server in a separate thread
-    socket_thread = threading.Thread(target=socket_server, daemon=True)
-    socket_thread.start()
+    socket_process = Process(target=socket_server)
+    socket_process.start()
 
-    # Start HTTP server
     with socketserver.TCPServer((HOST_NAME, HTTP_PORT), CustomHTTPRequestHandler) as httpd:
         print(f"HTTP server running on port {HTTP_PORT}")
         httpd.serve_forever()
+
+    socket_process.join()
